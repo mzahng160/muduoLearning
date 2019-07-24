@@ -108,15 +108,35 @@ void TimerQueue::handleRead()
 	loop_->assertInLoopThread();
 	Timestamp now(Timestamp::now());
 	readTimerfd(timerfd_, now);
+
+	std::vector<Entry> expired = getExpired(now);
+
+	for(std::vector<Entry>::iterator it = expired.begin();
+			it != expired.end(); ++it)
+	{
+		it->second->run();
+	}
+
+	reset(expired, now);
 }
 
 std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now)
 {
-	return 
+	std::vector<Entry> expired;
+	Entry sentry = std::make_pair(now, reinterpret_cast<Timer*>(UINTPTR_MAX));
+	TimerList::iterator it = timers_.lower_bound(sentry);
+
+	assert(it == timers_.end() || now < it->first);
+
+	std::copy(timers_.begin(), it, back_inserter(expired));
+	timers_.erase(timers_.begin(), it);
+
+	return expired;
 }
 
 void TimerQueue::reset(const std::vector<Entry>& expired, Timestamp now)
 {
+	Timestamp nextExpire;
 
 }
 
