@@ -1,4 +1,7 @@
+#define __STDC_LIMIT_MACROS
+
 #include "TimerQueue.h"
+
 #include "logging/Logging.h"
 #include "EventLoop.h"
 #include "Timer.h"
@@ -6,6 +9,7 @@
 
 #include <sys/timerfd.h>
 #include <boost/bind.hpp>
+#include <stdint.h>
 
 namespace muduo
 {
@@ -138,9 +142,46 @@ void TimerQueue::reset(const std::vector<Entry>& expired, Timestamp now)
 {
 	Timestamp nextExpire;
 
+	for (std::vector<Entry>::const_iterator it = expired.begin();
+			it != expired.end(); ++it)
+	{
+		if(it->second->repeat())
+		{
+			it->second->restart(now);
+			insert(it->second);
+		}
+		else
+		{
+			delete it->second;
+		}
+	}
+
+	if(!timers_.empty())
+	{
+		nextExpire = timers_.begin()->second->expiration();
+	}
+
+	if(nextExpire.valid())
+	{
+		resetTimerfd(timerfd_, nextExpire);
+	}
 }
 
 bool TimerQueue::insert(Timer* timer)
 {
+	bool earliestChanged = false;
 
+	Timestamp when = timer->expiration();
+	TimerList::iterator it = timers_.begin();
+	if(it == timers_.end() || when < it->first)
+	{
+		earliestChanged = true;
+	}
+
+	std::pair<TimerList::iterator, bool> result = 
+		timers_.insert(std::make_pair(when, timer));
+
+	assert(result.second);
+
+	return earliestChanged;
 }
