@@ -2,6 +2,9 @@
 #define MUDUO_NET_EVENTLOOP_H
 
 #include "thread/Thread.h"
+#include "TimerId.h"
+#include "datetime/Timestamp.h"
+#include "Callbacks.h"
 
 #include <boost/scoped_ptr.hpp>
 #include <vector>
@@ -10,6 +13,7 @@ namespace muduo
 {
 	class Channel;
 	class Poller;
+	class TimerQueue;
 
 	class EventLoop : boost::noncopyable
 	{
@@ -19,6 +23,10 @@ namespace muduo
 
 		void loop();
 		void quit();
+
+		TimerId runAt(const Timestamp& time, const TimerCallback& cb);
+		TimerId runAfter(double delay, const TimerCallback& cb);
+		TimerId runEvery(double interval, const TimerCallback& cb);
 
 		void updateChannel(Channel* channel);
 
@@ -40,6 +48,7 @@ namespace muduo
 		const pid_t threadId_;
 
 		boost::scoped_ptr<Poller> poller_;
+		boost::scoped_ptr<TimerQueue> timerQueue_;
 
 		typedef std::vector<Channel*> ChannelList;
 		ChannelList activeChannels_;

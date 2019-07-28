@@ -9,7 +9,7 @@ namespace muduo
 	class TimerId : public muduo::copyable
 	{
 	public:
-		TimerId(Timer* timer)
+		explicit TimerId(Timer* timer)
 			: value_(timer)
 		{
 		}		

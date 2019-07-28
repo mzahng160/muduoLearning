@@ -27,7 +27,7 @@ void print(const char* msg)
 
 int main()
 {
-  /*
+  
   printTid();
   muduo::EventLoop loop;
   g_loop = &loop;
@@ -43,5 +43,5 @@ int main()
   loop.loop();
   print("main loop exits");
   sleep(1);
-  */
+  
 }

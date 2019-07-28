@@ -19,15 +19,15 @@ Poller::~Poller()
 }
 
 Timestamp Poller::poll(int timeoutMs, ChannelList* activeChannels)
-{	
-	int numEvents = ::poll(&*pollfds_.begin(), pollfds_.size(), timeoutMs);	
+{
+	int numEvents = ::poll(&*pollfds_.begin(), pollfds_.size(), timeoutMs);		
 
 	Timestamp now(Timestamp::now());
 	if(numEvents > 0)
 	{
 		LOG_TRACE << numEvents << " events happend";
 		fillActiveChannels(numEvents, activeChannels);		
-	}
+	}	
 	else if(numEvents == 0)
 	{
 		LOG_TRACE << "nothing happend";
@@ -36,6 +36,8 @@ Timestamp Poller::poll(int timeoutMs, ChannelList* activeChannels)
 	{
 		LOG_SYSERR << " Poller::poll()";
 	}
+
+	printf("pollfds_ size %d numEvents %d\n", pollfds_.size(), numEvents);
 
 	return now;
 }
@@ -75,6 +77,8 @@ void Poller::updateChannel(Channel* channel)
 		int index = static_cast<int>(pollfds_.size()) - 1;
 		channel->set_index(index);
 		channels_[pfd.fd] = channel;
+
+		printf("add new channel %d, pollfds_ size %d\n", index, pollfds_.size());
 	}
 	else
 	{
@@ -89,6 +93,8 @@ void Poller::updateChannel(Channel* channel)
 
 		pfd.events = static_cast<short>(channel->events());
 		pfd.revents = 0;
+
+		printf("add new channel %d\n", idx);
 
 		if(channel->isNoneEvent())
 		{

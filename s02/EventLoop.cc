@@ -1,13 +1,11 @@
 #include "EventLoop.h"
 #include "Channel.h"
 #include "Poller.h"
+#include "TimerQueue.h"
 
 #include "logging/Logging.h"
 
 #include <assert.h>
-#include <poll.h>
-
-#include <iostream>
 
 using namespace muduo;
 
@@ -19,7 +17,9 @@ EventLoop::EventLoop()
 	: looping_(false),
 	  quit_(false),
 	  threadId_(CurrentThread::tid()),
-	  poller_(new Poller(this))
+	  poller_(new Poller(this)),
+	  timerQueue_(new TimerQueue(this))
+
 {
 	LOG_TRACE << "EventLoop created " << this << " in thread " << threadId_;
 	if(t_loopThisThread)
@@ -53,9 +53,7 @@ void EventLoop::loop()
 		{
 			(*it)->handleEvent();
 		}
-;
 	}
-	//::poll(NULL, 0, 5*1000);
 
 	LOG_TRACE << "EventLoop " << this << " stop looping";
 	looping_ = false;
@@ -79,4 +77,21 @@ void EventLoop::abortNotInLoopThread()
 	LOG_FATAL << "EventLoop::abortNotInLoopThread - EventLoop " << this
 				<< " was created in threadId_ = " << threadId_
 				<< ", current thread id = " << CurrentThread::tid();
+}
+
+TimerId EventLoop::runAt(const Timestamp& time, const TimerCallback& cb)
+{
+	return timerQueue_->addTimer(cb, time, 0.0);
+}
+
+TimerId EventLoop::runAfter(double delay, const TimerCallback& cb)
+{
+	Timestamp time(addTime(Timestamp::now(), delay));
+	return runAt(time, cb);
+}
+
+TimerId EventLoop::runEvery(double interval, const TimerCallback& cb)
+{
+	Timestamp time(addTime(Timestamp::now(), interval));
+	return timerQueue_->addTimer(cb, time, interval);
 }
