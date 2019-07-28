@@ -24,6 +24,8 @@ namespace muduo
 		void loop();
 		void quit();
 
+		Timestamp pollReturnTime() const {return  pollReturnTime_;}
+
 		TimerId runAt(const Timestamp& time, const TimerCallback& cb);
 		TimerId runAfter(double delay, const TimerCallback& cb);
 		TimerId runEvery(double interval, const TimerCallback& cb);
@@ -49,6 +51,8 @@ namespace muduo
 
 		boost::scoped_ptr<Poller> poller_;
 		boost::scoped_ptr<TimerQueue> timerQueue_;
+
+		Timestamp pollReturnTime_;		
 
 		typedef std::vector<Channel*> ChannelList;
 		ChannelList activeChannels_;

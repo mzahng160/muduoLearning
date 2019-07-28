@@ -9,7 +9,6 @@
 
 #include <sys/timerfd.h>
 #include <boost/bind.hpp>
-#include <stdint.h>
 
 namespace muduo
 {
@@ -37,7 +36,10 @@ namespace muduo
 
 			struct timespec ts;
 			ts.tv_sec = static_cast<time_t>(microseconds / Timestamp::kMicroSecondsPerSecond);
-			ts.tv_nsec = static_cast<time_t>(microseconds / Timestamp::kMicroSecondsPerSecond * 1000);
+			//ts.tv_nsec = static_cast<time_t>(microseconds / Timestamp::kMicroSecondsPerSecond * 1000);
+			
+			ts.tv_nsec = static_cast<long>((microseconds % Timestamp::kMicroSecondsPerSecond) * 1000);
+			printf("====howMuchTimeFromNow %d %d\n",ts.tv_sec, ts.tv_nsec);
 			
 			return ts;
 		}

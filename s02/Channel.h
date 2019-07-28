@@ -17,7 +17,7 @@ namespace muduo
 		typedef boost::function<void()> EventCallback;
 		void handleEvent();
 
-		void setReadCallback(const EventCallback cb)
+		void setReadCallback(const EventCallback& cb)
 		{ readCallback_ = cb; }
 		void setWriteCallback(const EventCallback cb)
 		{ writeCallback_ = cb; }

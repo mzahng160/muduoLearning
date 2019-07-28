@@ -43,10 +43,12 @@ void EventLoop::loop()
 	assertInLoopThread();
 	looping_ = true;
 
+	quit_ = false;
+
 	while(!quit_)
 	{
 		activeChannels_.clear();
-		poller_->poll(kPollTimeMs, &activeChannels_);
+		pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);
 
 		for(ChannelList::iterator it = activeChannels_.begin();
 			it != activeChannels_.end(); ++it)
@@ -64,21 +66,6 @@ void EventLoop::quit()
 	quit_ = true;
 }
 
-void EventLoop::updateChannel(Channel* channel)
-{
-	assert(channel->ownerLoop() == this);
-	assertInLoopThread();
-	poller_->updateChannel(channel);
-
-}
-
-void EventLoop::abortNotInLoopThread()
-{
-	LOG_FATAL << "EventLoop::abortNotInLoopThread - EventLoop " << this
-				<< " was created in threadId_ = " << threadId_
-				<< ", current thread id = " << CurrentThread::tid();
-}
-
 TimerId EventLoop::runAt(const Timestamp& time, const TimerCallback& cb)
 {
 	return timerQueue_->addTimer(cb, time, 0.0);
@@ -94,4 +81,19 @@ TimerId EventLoop::runEvery(double interval, const TimerCallback& cb)
 {
 	Timestamp time(addTime(Timestamp::now(), interval));
 	return timerQueue_->addTimer(cb, time, interval);
+}
+
+void EventLoop::updateChannel(Channel* channel)
+{
+	assert(channel->ownerLoop() == this);
+	assertInLoopThread();
+	poller_->updateChannel(channel);
+
+}
+
+void EventLoop::abortNotInLoopThread()
+{
+	LOG_FATAL << "EventLoop::abortNotInLoopThread - EventLoop " << this
+				<< " was created in threadId_ = " << threadId_
+				<< ", current thread id = " << CurrentThread::tid();
 }

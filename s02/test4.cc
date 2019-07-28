@@ -1,7 +1,6 @@
 // copied from muduo/net/tests/TimerQueue_unittest.cc
 
 #include "EventLoop.h"
-#include "datetime/Timestamp.h"
 
 #include <boost/bind.hpp>
 
