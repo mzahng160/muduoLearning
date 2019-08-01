@@ -35,9 +35,6 @@ namespace muduo
 		Channel acceptChannel_;
 		NewConnectionCallback newConnectionCallback_;
 		bool listenning_;
-
-		
-		
 	};
 }
 

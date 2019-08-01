@@ -6,9 +6,14 @@
 
 using namespace muduo;
 
-void Socket::bindAddress(const InetAddress& localaddr)
+Socket::~Socket()
 {
+	sockets::close(sockfd_);
+}
 
+void Socket::bindAddress(const InetAddress& addr)
+{
+	sockets::bindOrDie(sockfd_, addr.getSockAddrInet());
 }
 
 void Socket::listen()
@@ -31,5 +36,7 @@ int Socket::accept(InetAddress* peeraddr)
 
 void Socket::setReuseAddr(bool on)
 {
-
+	int optval = on ? 1 : 0;
+	::setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR,
+				&optval, sizeof optval);
 }

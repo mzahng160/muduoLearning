@@ -4,8 +4,9 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <fcntl.h>
+//#include <strings.h>
 //#include <unistd.h>
-//#include <stdio.h>
+#include <stdio.h>
 
 using namespace muduo;
 
@@ -79,8 +80,32 @@ int sockets::accept(int sockfd, struct sockaddr_in* addr)
 #endif
 	if(connfd < 0)
 	{
-		//int savedErrno = errno;
+		int savedErrno = errno;
 		LOG_SYSERR << "sockrts::accept";
+		switch(savedErrno)
+		{
+			case EAGAIN:
+			case ECONNABORTED:
+			case EINTR:
+			case EPROTO:
+			case EPERM:
+			case EMFILE:
+				errno = savedErrno;
+				break;
+			case EBADF:
+			case EFAULT:
+			case EINVAL:
+			case ENFILE:
+			case ENOBUFS:
+			case ENOMEM:
+			case ENOTSOCK:
+			case EOPNOTSUPP:
+				LOG_FATAL << "unexpected error of ::accept " << savedErrno;
+				break;
+			default:
+				LOG_FATAL << "unkonow error of ::accept " << savedErrno;
+				break;
+		}
 	}
 
 	return connfd;
@@ -88,16 +113,23 @@ int sockets::accept(int sockfd, struct sockaddr_in* addr)
 
 void sockets::close(int sockfd)
 {
-
+	if(::close(sockfd) < 0)
+		LOG_SYSERR << "sockets::close";
 }
 
 void sockets::toHostPort(char* buf, size_t size,
 			const struct sockaddr_in& addr)
 {
-
+	char host[INET_ADDRSTRLEN] = "INVALID";
+	::inet_ntop(AF_INET, &addr.sin_addr, host, sizeof host);
+	uint16_t port = sockets::networkToHost16(addr.sin_port);
+	snprintf(buf, size, "%s:%u", host, port);
 }
 void sockets::fromHostPort(const char* ip, uint16_t port,
 					struct sockaddr_in* addr)
 {
-
+	addr->sin_family = AF_INET;
+	addr->sin_port = hostToNetwork16(port);
+	if(::inet_pton(AF_INET, ip, &addr->sin_addr) <= 0)
+		LOG_SYSERR << "sockets::fromHostPort";
 }

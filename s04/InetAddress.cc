@@ -2,10 +2,15 @@
 #include "SocketsOps.h"
 
 #include <strings.h>
+#include <netinet/in.h>
+
+#include <boost/static_assert.hpp>
 
 using namespace muduo;
 
 static const in_addr_t kInaddrAny = INADDR_ANY;
+
+BOOST_STATIC_ASSERT(sizeof(InetAddress) == sizeof(struct sockaddr_in));
 
 InetAddress::InetAddress(uint16_t port)
 {
@@ -17,5 +22,13 @@ InetAddress::InetAddress(uint16_t port)
 
 InetAddress::InetAddress(const std::string& ip, uint16_t port)
 {
+	bzero(&addr_, sizeof addr_);
+	sockets::fromHostPort(ip.c_str(), port, &addr_);
+}
 
+std::string InetAddress::toHostPort() const
+{
+	char buf[32];
+	sockets::toHostPort(buf, sizeof buf, addr_);
+	return buf;
 }
