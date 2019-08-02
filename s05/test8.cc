@@ -2,6 +2,8 @@
 #include "EventLoop.h"
 #include "TcpServer.h"
 
+#include <stdio.h>
+
 void onConnection(const muduo::TcpConnectionPtr& conn)
 {
 	if(conn->connected())

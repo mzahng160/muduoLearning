@@ -133,3 +133,16 @@ void sockets::fromHostPort(const char* ip, uint16_t port,
 	if(::inet_pton(AF_INET, ip, &addr->sin_addr) <= 0)
 		LOG_SYSERR << "sockets::fromHostPort";
 }
+
+struct sockaddr_in sockets::getLocalAddr(int sockfd)
+{
+	struct sockaddr_in localaddr;
+
+	bzero(&localaddr, sizeof localaddr);
+	socklen_t addrlen = sizeof localaddr;
+
+	if(::getsockname(sockfd, sockadd_cast(&localaddr), &addrlen) < 0)
+		LOG_SYSERR << "sockets::getLocalAddr";
+
+	return localaddr;
+}
