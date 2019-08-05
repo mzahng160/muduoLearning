@@ -3,11 +3,23 @@
 
 #include "datetime/copyable.h"
 
+#include "SocketsOps.h"
+
 #include <string>
 #include <vector>
+#include <algorithm>
+
+#include <assert.h>
 
 namespace muduo
 {
+	//+------------------+----------------+----------------+
+	//|prependable bytes | readable bytes | writable bytes |
+	//|					 | (content)	  |				   |
+	//+------------------+----------------+----------------+
+	//0     <=       readerIndex  <=  writerIndex  <=     size
+	//
+	
 	class Buffer : public muduo::copyable
 	{
 	public:
@@ -46,7 +58,7 @@ namespace muduo
 
 		void retrieve(size_t len)
 		{
-			assert(le <= readableBytes());
+			assert(len <= readableBytes());
 			readerIndex_ += len;
 		}
 
@@ -63,7 +75,7 @@ namespace muduo
 			writerIndex_ = kCheapPrepend;
 		}
 
-		void retrieveAsString()
+		std::string retrieveAsString()
 		{
 			std::string str(peek(), readableBytes());
 			retrieveAll();
@@ -84,7 +96,7 @@ namespace muduo
 
 		void append(const void* data, size_t len)
 		{
-			append(static_cast<char*>(data), len);
+			append(static_cast<const char*>(data), len);
 		}
 
 		void ensureWritableBytes(size_t len)
@@ -103,13 +115,22 @@ namespace muduo
 		void hasWritten(size_t len)
 		{ writerIndex_ += len; }
 
-		void prepend()
-		{}
+		void prepend(const void* data, size_t len)
+		{
+			assert(len <= prependableBytes());
+			readerIndex_ -= len;
+			const char* d = static_cast<const char*>(data);
+			std::copy(d, d+len, begin()+readerIndex_);
+		}
 
 		void shrink(size_t reserve)
 		{
-			
+			std::vector<char> buf(kCheapPrepend+readableBytes()+reserve);
+			std::copy(peek(), peek()+readableBytes(), buf.begin()+kCheapPrepend);
+			buf.swap(buffer_);
 		}
+
+		ssize_t readFd(int fd, int* savedErrno);
 	private:
 		char* begin()
 		{ return &*buffer_.begin(); }
@@ -119,7 +140,22 @@ namespace muduo
 
 		void makeSpace(size_t len)
 		{
+			if(writableBytes()+prependableBytes() < len+kCheapPrepend)
+			{
+				buffer_.resize(writerIndex_+len);
+			}
+			else
+			{
+				assert(kCheapPrepend < readerIndex_);
+				size_t readable = readableBytes();
+				std::copy(begin()+readerIndex_,
+							begin()+writerIndex_,
+							begin()+kCheapPrepend);
+				readerIndex_ = kCheapPrepend;
+				writerIndex_ = readerIndex_ + readable;
 
+				assert(readable == readableBytes());
+			}
 		}
 
 
