@@ -26,6 +26,9 @@ namespace muduo
 
 		void setMessageCallback(const MessageCallback& cb)
 		{ messageCallback_ = cb; }
+
+		void setWriteCompleteCallback(const WriteCompleteCallback& cb)
+		{ writeCompleteCallback_ = cb; }
 		
 
 	private:
@@ -43,6 +46,7 @@ namespace muduo
 
 		ConnectionCallback connectionCallback_;
 		MessageCallback messageCallback_;
+		WriteCompleteCallback writeCompleteCallback_;
 	};
 }
 

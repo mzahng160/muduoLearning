@@ -91,9 +91,14 @@ void TcpConnection::handleWrite()
 			if(0 == outputBuffer_.readableBytes())
 			{
 				channel_->disableWriting();
-			
+				
+				if(writeCompleteCallback_)
+				{
+					loop_->queueInLoop(
+						boost::bind(writeCompleteCallback_, shared_from_this()));
+				}									
 				if(state_ == kDisconnecting)
-					shutdownInLoop();					
+					shutdownInLoop();				
 			}
 			else			
 				LOG_TRACE << "I am going write more";			
@@ -121,16 +126,26 @@ void TcpConnection::sendInLoop(const std::string& message)
 	loop_->assertInLoopThread();
 	ssize_t nwrote = 0;
 
-	if(!channel_->isWriting() && outputBuffer_.readableBytes() == 0){
+	if(!channel_->isWriting() && outputBuffer_.readableBytes() == 0)
+	{
 		nwrote = ::write(channel_->fd(), message.data(), message.size());
-		if(nwrote >= 0){
+		if(nwrote >= 0)
+		{
 			if(implicit_cast<size_t>(nwrote) < message.size())
 			{
 				LOG_TRACE << "I am going to write more data";
 			}
-		}else{
+			else if(writeCompleteCallback_)
+			{
+				loop_->queueInLoop(
+					boost::bind(writeCompleteCallback_, shared_from_this()));
+			}
+		}
+		else
+		{
 			nwrote = 0;
-			if(errno != EWOULDBLOCK){
+			if(errno != EWOULDBLOCK)
+			{
 				LOG_SYSERR << "TcpConnection::sendInLoop";
 			}				
 		}
@@ -153,6 +168,11 @@ void TcpConnection::shutdown()
 		setState(kDisconnecting);
 		loop_->runInLoop(boost::bind(&TcpConnection::shutdownInLoop, this));
 	}
+}
+
+void TcpConnection::setTcpNoDelay(bool on)
+{
+	socket_->setTcpNoDelay(on);
 }
 
 void TcpConnection::shutdownInLoop()

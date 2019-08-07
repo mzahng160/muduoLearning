@@ -3,8 +3,7 @@
 #include "EventLoop.h"
 #include <stdio.h>
 
-std::string message1;
-std::string message2;
+std::string message;
 
 void onConnection(const muduo::TcpConnectionPtr& conn)
 {
@@ -14,15 +13,18 @@ void onConnection(const muduo::TcpConnectionPtr& conn)
 			conn->name().c_str(),
 			conn->peerAddress().toHostPort().c_str());
 
-		conn->send(message1);
-		conn->send(message2);
-		conn->shutdown();
+		conn->send(message);
 	}
 	else
 	{
 		printf("onConnection: connection[%s] is down\n", 
 				conn->name().c_str());
 	}
+}
+
+void onWriteComplete(const muduo::TcpConnectionPtr& conn)
+{
+	conn->send(message);
 }
 
 void onMessage(const muduo::TcpConnectionPtr& conn,
@@ -41,20 +43,19 @@ int main(int argc, char* argv[])
 {
 	printf("main(): pid = %d\n", getpid());
 
-	int len1 = 100;
-	int len2 = 200;
-
-	if(argc > 2)
+	std::string line;
+	for(int i = 33; i < 127; ++i)
 	{
-		len1 = atoi(argv[1]);
-		len2 = atoi(argv[2]);
+		line.push_back(char(i));
 	}
 
-	message1.resize(len1);
-	message2.resize(len2);
+	line += line;
 
-	std::fill(message1.begin(), message1.end(), 'A');
-	std::fill(message2.begin(), message2.end(), 'B');	
+	for(size_t i = 0; i < 127-33; ++i)
+	{
+		message += line.substr(i, 72) + '\n';
+	}
+	
 
 	muduo::InetAddress listenAddr(9981);
 	muduo::EventLoop loop;
@@ -62,6 +63,7 @@ int main(int argc, char* argv[])
 	muduo::TcpServer server(&loop, listenAddr);
 	server.setConnectionCallback(onConnection);
 	server.setMessageCallback(onMessage);
+	server.setWriteCompleteCallback(onWriteComplete);
 	server.start();
 
 	loop.loop();
