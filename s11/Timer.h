@@ -5,6 +5,7 @@
 
 #include "datetime/Timestamp.h"
 #include "Callbacks.h"
+#include "thread/Atomic.h"
 
 namespace muduo
 {
@@ -15,7 +16,8 @@ namespace muduo
 			:callback_(cb),
 			 expiration_(when),
 			 interval_(interval),
-			 repeat_(interval > 0.0)
+			 repeat_(interval > 0.0),
+			 sequence_(s_numCreated_.incrementAndGet())
 		{}
 
 		void run() const
@@ -26,13 +28,18 @@ namespace muduo
 		void restart(Timestamp now);
 
 		Timestamp expiration() const { return expiration_; }
-		bool repeat() const { return repeat_; }		
+		bool repeat() const { return repeat_; }
+		int64_t sequence() const { return sequence_; }
 
 	private:
 		const TimerCallback callback_;
 		Timestamp expiration_;
 		const double interval_;
 		const bool repeat_;
+
+		const int64_t sequence_;
+
+		static AtomicInt64 s_numCreated_;
 	};
 }
 

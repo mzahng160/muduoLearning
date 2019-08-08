@@ -152,7 +152,7 @@ TimerId EventLoop::runEvery(double interval, const TimerCallback& cb)
 
 void EventLoop::cancel(TimerId timerId)
 {
-	
+	return timerQueue_->cancel(timerId);
 }
 
 void EventLoop::updateChannel(Channel* channel)

@@ -54,6 +54,11 @@ int sockets::createNonblockingOrDie()
 	return sockfd;
 }
 
+int sockets::connect(int sockfd, const struct sockaddr_in& addr)
+{
+	return ::connect(sockfd, sockadd_cast(&addr), sizeof addr);
+}
+
 void sockets::bindOrDie(int sockfd, const struct sockaddr_in& addr)
 {
 	int ret = ::bind(sockfd, sockadd_cast(&addr), sizeof addr);
@@ -153,6 +158,19 @@ struct sockaddr_in sockets::getLocalAddr(int sockfd)
 	return localaddr;
 }
 
+struct sockaddr_in sockets::getPeerAddr(int sockfd)
+{
+	struct sockaddr_in peeraddr;
+	bzero(&peeraddr, sizeof peeraddr);
+	socklen_t addrlen = sizeof(peeraddr);
+	if(::getpeername(sockfd, sockadd_cast(&peeraddr), &addrlen) < 0)
+	{
+		LOG_SYSERR << "sockets::getPeeraddr";
+	}
+
+	return peeraddr;
+}
+
 int sockets::getSocketError(int sockfd)
 {
 	int optval;
@@ -162,4 +180,13 @@ int sockets::getSocketError(int sockfd)
 		return errno;
 	else
 		return optval;
+}
+
+bool sockets::isSelfConnect(int sockfd)
+{
+	struct sockaddr_in localaddr = getLocalAddr(sockfd);
+	struct sockaddr_in peeraddr = getPeerAddr(sockfd);
+
+	return localaddr.sin_port == peeraddr.sin_port 
+		&& localaddr.sin_addr.s_addr == peeraddr.sin_addr.s_addr;
 }

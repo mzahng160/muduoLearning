@@ -29,14 +29,14 @@ namespace muduo
 		void restart();
 		void stop();
 
-		const InetAddress& serverAddress() const { return addr_; }
+		const InetAddress& serverAddress() const { return serverAddr_; }
 
 	private:
 		enum States {kDisconnected, kConnecting, kConnected, };
-		static const int kMaxRetryDelayMs = 30 * 1000;
+		static const int kMaxRetryDelayMs = 30 *1000;
 		static const int kInitRetryDelayMs = 500;
 
-		void setStates(States s) { state_ = s; }
+		void setState(States s) { state_ = s; }
 		void startInLoop();
 		void connect();
 		void connecting(int sockfd);
@@ -47,7 +47,7 @@ namespace muduo
 		void resetChannel();		
 
 		EventLoop* loop_;
-		InetAddress addr_;
+		InetAddress serverAddr_;
 		bool connect_;	//atomic
 		States state_;
 		boost::scoped_ptr<Channel> channel_;
