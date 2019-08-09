@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+std::string message = "Hello\n";
+
 void onConnection(const muduo::TcpConnectionPtr& conn)
 {
 	if(conn->connected())
@@ -16,7 +18,7 @@ void onConnection(const muduo::TcpConnectionPtr& conn)
 		if(!message.empty())
 			conn->send(message);
 
-		conn->shutdown();
+		//conn->shutdown();
 	}
 	else
 	{
@@ -35,7 +37,8 @@ void onMessage(const muduo::TcpConnectionPtr& conn,
 			buf->readableBytes(),
 			conn->name().c_str(),
 			receiveTime.toFormattedString().c_str());
-	//buf->retrieveAll();
+	
+	printf("onMessage(): [%s]\n",  buf->retrieveAsString().c_str());
 	
 }
 
