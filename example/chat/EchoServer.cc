@@ -3,10 +3,9 @@
 #include "TcpServer.h"
 #include "logging/Logging.h"
 
-#include <functional>
+#include <boost/bind.hpp>
 
 using namespace muduo;
-using namespace std::placeholders;
 
 int numThreads = 0;
 
@@ -20,9 +19,9 @@ public:
         server_(loop, listenAddr)
   {
     server_.setConnectionCallback(
-      std::bind(&EchoServer::onConnection, this, _1));
+      boost::bind(&EchoServer::onConnection, this, _1));
     server_.setMessageCallback(
-      std::bind(&EchoServer::onMessage, this, _1, _2, _3));
+      boost::bind(&EchoServer::onMessage, this, _1, _2, _3));
     server_.setThreadNum(numThreads);
   }
   //~EchoServer(){}

@@ -5,14 +5,14 @@
 #include "logging/Logging.h"
 
 #include <boost/noncopyable.hpp>
-//#include <>
+#include <boost/bind.hpp>
+#include <boost/ptr_container/ptr_vector.hpp> 
 
 using namespace muduo;
-using namespace std::placeholders;
 
 int current = 0;
 class EchoClient;
-std::vector<std::unique_ptr<EchoClient>> clients;
+boost::ptr_vector<EchoClient> clients;
 
 class EchoClient : boost::noncopyable
 {
@@ -23,9 +23,9 @@ public:
         index_(index)
   {
     client_.setConnectionCallback(
-      std::bind(&EchoClient::onConnection, this, _1));
+      boost::bind(&EchoClient::onConnection, this, _1));
     client_.setMessageCallback(
-      std::bind(&EchoClient::onMessage, this, _1, _2, _3));
+      boost::bind(&EchoClient::onMessage, this, _1, _2, _3));
   }
   //~EchoClient();
   
@@ -47,7 +47,7 @@ public:
         ++current;
         if(implicit_cast<size_t>(current) < clients.size())
         {
-          clients[current]->connect();  
+          clients[current].connect();  
         }
         LOG_INFO << "*** connected " << current;        
       }
@@ -108,9 +108,9 @@ int main(int argc, char* argv[])
 
   for(int i = 0; i < n; ++i)
   {
-    clients.emplace_back(new EchoClient(&loop, serverAddr, i));
+    clients.push_back(new EchoClient(&loop, serverAddr, i));
   }
 
-  clients[current]->connect();
+  clients[current].connect();
   loop.loop();
 }

@@ -4,8 +4,6 @@
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <functional>
-
 #include "datetime/Timestamp.h"
 namespace muduo
 {
@@ -23,7 +21,7 @@ namespace muduo
 									Buffer* buf, 
 									Timestamp)> MessageCallback;
 	typedef boost::function<void (const TcpConnectionPtr&)> WriteCompleteCallback;
-	typedef std::function<void(const TcpConnectionPtr&, size_t)> HighWaterMarkCallback;
+	typedef boost::function<void(const TcpConnectionPtr&, size_t)> HighWaterMarkCallback;
 	typedef boost::function<void (const TcpConnectionPtr&)> CloseCallback;	
 }
 

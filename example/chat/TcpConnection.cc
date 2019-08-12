@@ -206,7 +206,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
 			if(remaining == 0 && writeCompleteCallback_)
 			{
 				loop_->queueInLoop(
-					std::bind(writeCompleteCallback_, shared_from_this()));
+					boost::bind(writeCompleteCallback_, shared_from_this()));
 			}		
 		}
 		else
@@ -230,7 +230,7 @@ void TcpConnection::sendInLoop(const void* data, size_t len)
 			&& oldlen < highWaterMark_
 			&& highWaterMarkCallback_)
 		{
-			loop_->queueInLoop(std::bind(highWaterMarkCallback_,
+			loop_->queueInLoop(boost::bind(highWaterMarkCallback_,
 						shared_from_this(), oldlen + remaining));
 			outputBuffer_.append(
 				static_cast<const char*>(data)+nwrote, remaining);

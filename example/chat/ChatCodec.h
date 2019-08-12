@@ -5,12 +5,12 @@
 #include "TcpConnection.h"
 
 #include <boost/noncopyable.hpp>
-#include <functional>
+#include <boost/function.hpp>
 
 class LengthChatCodec : boost::noncopyable
 {
 public:
-	typedef std::function<void (const muduo::TcpConnectionPtr&,
+	typedef boost::function<void (const muduo::TcpConnectionPtr&,
 							const std::string& message,
 							muduo::Timestamp)> StringMessageCallback;
 
@@ -48,7 +48,7 @@ public:
 		}
 	}
 
-	void send(muduo::TcpConnection* conn, std::string& message)
+	void send(muduo::TcpConnection* conn, const std::string& message)
 	{
 		muduo::Buffer buf;
 		buf.append(message.data(), message.size());
