@@ -60,7 +60,7 @@ private:
 	void onStringMessage(const TcpConnectionPtr& conn,
 			const std::string& message, Timestamp)
 	{
-		printf(" <<< %s\n", message.c_str());
+		printf(" receive[%s]\n", message.c_str());
 	}
 
 	TcpClient client_;

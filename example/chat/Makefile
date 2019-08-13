@@ -16,7 +16,7 @@ LIB_SRC = 			\
 	Timer.cc		\
 	TimerQueue.cc
 
-BINARIES = EchoServer EchoClient ChatServer ChatClient
+BINARIES = EchoServer EchoClient ChatServer ChatClient TestBuffer
 
 all: $(BINARIES)
 
@@ -26,3 +26,4 @@ EchoServer: EchoServer.cc
 EchoClient: EchoClient.cc
 ChatServer: ChatServer.cc
 ChatClient: ChatClient.cc
+TestBuffer: TestBuffer.cc

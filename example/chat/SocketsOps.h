@@ -31,7 +31,8 @@ namespace muduo
 
 		inline uint32_t networkToHost32(uint32_t net32)
 		{
-			return ntohl(net32);
+			//return ntohl(net32);
+			return be32toh(net32);
 		}
 
 		inline uint16_t networkToHost16(uint16_t net16)

@@ -36,7 +36,14 @@ private:
 				<< conn->localAddress().toHostPort() << " is "
 				<< (conn->connected() ? "up" : "down");
 		//LOG_INFO << conn->getTcpInfo();
-		conn->send("hello\n");
+		if(conn->connected())
+		{
+			connections_.insert(conn);
+		}
+		else
+		{
+			connections_.erase(conn);
+		}
 	}
 
 	void onStringMessage(const TcpConnectionPtr&,
