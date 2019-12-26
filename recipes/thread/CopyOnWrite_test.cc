@@ -18,6 +18,7 @@ std::mutex mutex;
 void post(const Foo& f)
 {
 	printf("post\n");
+	std::lock_guard<std::mutex> lock(mutex);
 	if (!g_foos.unique())
 	{
 		g_foos.reset(new FooList(*g_foos));
