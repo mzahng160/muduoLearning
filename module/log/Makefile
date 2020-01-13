@@ -1,0 +1,9 @@
+TARGET = LOG_TEST
+CC = g++ 
+CCFLAGS = 
+
+$(TARGET): Logging.cc  Logging_test.cc LogStream.cc ../ThreadPool/ThreadPool.cc
+	$(CC) -o $(TARGET) Logging.cc Logging_test.cc LogStream.cc ../ThreadPool/ThreadPool.cc -lpthread $(CCFLAGS)
+
+clean: 
+	rm $(TARGET) 
