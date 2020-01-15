@@ -4,10 +4,13 @@
 #include <string>
 #include "../ThreadPool/ThreadPool.h"
 
-std::unique_ptr<LogModule::Logger> g_log;
+using namespace LogModule;
 
 void logInThread()
 {
+	LOG_INFO << "logInThread";
+	//printf("logInThread\n");
+	usleep(1000*1000);
 }
 
 int main()

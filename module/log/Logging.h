@@ -61,11 +61,25 @@ namespace LogModule
 		static LogLevel logLevel();
 		static void setLogLevel(LogLevel level);
 
+		typedef void(*OutputFunc)(const char* msg, int len);
+		typedef void(*FlushFunc)();
+		static void setOutput(OutputFunc);
+		static void setFlush(FlushFunc);
+
 	private:
 		class Impl 
 		{
-		public:
+		public:			
+			Impl(LogLevel level, int old_errno, const SourceFile& file, int line);
+			void formatTime();
+			void finish();
+
+			//Timestamp time_;
 			LogStream stream_;
+			LogLevel level_;
+			int line_;
+			SourceFile basename_;
+
 		};
 
 		Impl impl_;
@@ -74,11 +88,13 @@ namespace LogModule
 
 	extern Logger::LogLevel g_logLevel;
 	inline Logger::LogLevel Logger::logLevel()
-	{
+	{		
 		return g_logLevel;
 	}
 #define LOG_INFO if(Logger::logLevel() <= Logger::INFO) \
-			Logger(__FILE__, __LINE__).stream()
+			Logger(__FILE__, __LINE__).stream()			
+
+	const char* strerror_tl(int savedErrno);
 }
 
 #endif // !LOGGING_H
