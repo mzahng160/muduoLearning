@@ -20,12 +20,12 @@ namespace LogModule
 			FixedBuffer()
 				:cur_(data_)
 			{				
-				
+				setCookie(cookieStart);
 			}
 
 			~FixedBuffer()
 			{
-				setCookie(cookieStart);
+				
 				setCookie(cookieEnd);
 			}
 

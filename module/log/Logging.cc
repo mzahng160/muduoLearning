@@ -3,15 +3,19 @@
 #include <thread>
 #include <chrono>
 #include <string>
+#include <string.h>
 #include <assert.h>
 #include <sstream>
+#include <time.h>
+
+__thread char t_errnobuf[512];
 
 namespace LogModule
 {
 	__thread char t_errorbuf[512];
 	const char* strerror_tl(int savedErrno)
 	{
-	
+		return strerror_r(savedErrno, t_errnobuf, sizeof t_errnobuf);
 	}
 
 	Logger::LogLevel initLogLevel()
@@ -84,17 +88,25 @@ namespace LogModule
 		if (old_errno != 0)
 		{
 			;//stream_ <<
+
 		}
 
 	}
 
 	void Logger::Impl::formatTime()
 	{
-
+		time_t result;
+		char str[26];
+		char buf[26];
+		time(&result);
+		ctime_r(&result, str);		
+		snprintf(buf,25, "%s", str);
+		stream_ << buf;
+		stream_ << '-';
 	}
 
 	void Logger::Impl::finish()
-	{
+	{		
 		stream_ << '-' << basename_.data_ << ':' << line_ << '\n';
 	}
 
@@ -120,6 +132,25 @@ namespace LogModule
 	{
 		
 	}
+
+	Logger::Logger(SourceFile file, int line, LogLevel level)
+		:impl_(level, 0, file, line)
+	{
+	
+	}
+
+	Logger::Logger(SourceFile file, int line, LogLevel level, const char* func)
+		: impl_(level, 0, file, line)
+	{
+		impl_.stream_ << func << ' ';
+	}
+
+	Logger::Logger(SourceFile file, int line, bool toAbort)
+		: impl_(toAbort? FATAL: ERROR, errno, file, line)
+	{
+	
+	}
+
 	void Logger::setOutput(OutputFunc out)
 	{
 		g_output = out;
