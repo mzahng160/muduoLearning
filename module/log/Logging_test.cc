@@ -106,9 +106,9 @@ int main()
 	bench("test_log_st");
 
 
+#endif
 	g_logFile.reset(new LogModule::LogFile("test_log_mt", 500 * 1000 * 1000, true));
 	bench("test_log_mt");
 	g_logFile.reset();
-#endif
 	return 0;
 }

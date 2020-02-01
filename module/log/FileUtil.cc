@@ -5,7 +5,8 @@
 using namespace FileUtil;
 
 AppendFile::AppendFile(StringArg filename)
-	:fp_(::fopen(filename.c_str(), "ae"))
+	:fp_(::fopen(filename.c_str(), "ae")),
+	writtenBytes_(0)
 {
 	assert(fp_);
 	::setbuffer(fp_, buffer_, sizeof buffer_);

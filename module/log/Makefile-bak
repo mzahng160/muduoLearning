@@ -1,3 +1,4 @@
+#Makefile for logging_test
 TARGET = LOG_TEST
 CC = g++ 
 CCFLAGS = -g
